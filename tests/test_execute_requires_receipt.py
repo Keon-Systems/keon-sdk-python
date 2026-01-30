@@ -101,5 +101,4 @@ class TestExecuteRequiresReceipt:
             )
 
         assert "denied" in str(exc_info.value).lower()
-        # Check details instead of just str() if it doesn't include the receipt_id in the message
-        assert exc_info.value.details["receiptId"] == denied_receipt.receipt_id
+        assert denied_receipt.receipt_id in str(exc_info.value)

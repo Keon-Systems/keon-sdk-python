@@ -1,35 +1,3 @@
-# What This Repository Is
-
-This repository contains the public SDK and contracts for **Keon**.
-
-It exists so that:
-- interfaces are inspectable
-- claims are falsifiable
-- verification logic is reviewable
-- integrations can be built without trust in a hosted runtime
-
-## What This Repository Is Not
-
-This repository does **not** include:
-- hosted services
-- control planes
-- tenant routing logic
-- operational dashboards
-- production secrets
-
-Those components live in private systems by design.
-
-## Design Philosophy
-
-Keon is built on the principle that **trust should be proven, not promised**.
-
-Public SDKs are part of that proof:
-- deterministic inputs
-- explicit contracts
-- verifiable outputs
-
-If you can run it, inspect it, and validate it - it's working as intended.
-
 ## Keon Python SDK
 
 **Team Claude deliverable** — Thin, safe-by-default Python client for Keon Runtime.
