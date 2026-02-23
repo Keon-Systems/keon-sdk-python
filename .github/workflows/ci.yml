@@ -1,0 +1,104 @@
+name: keon-sdk CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  sentinels:
+    name: Architecture Sentinels
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Verify sentinel count (meta-sentinel)
+        run: |
+          COUNT=$(python -m pytest --co -q -m sentinel 2>&1 | grep -c "::" || true)
+          echo "Sentinel count: $COUNT"
+          if [ "$COUNT" -lt 9 ]; then
+            echo "SENTINEL SUITE TOO SMALL: found $COUNT, expected >= 9"
+            echo "Sentinels may have been deleted. No merge until count is restored."
+            exit 1
+          fi
+
+      - name: Run architecture sentinels
+        run: |
+          python -m pytest tests/test_keon_sentinels.py -m sentinel -v --no-header --tb=short
+
+  test:
+    name: Full Test Suite
+    needs: [sentinels]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests
+        run: |
+          python -m pytest --cov=keon_sdk --cov-report=xml --cov-report=term
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: keon-sdk
+          name: keon-sdk-${{ matrix.python-version }}
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run Black
+        run: black --check keon_sdk/ tests/
+
+      - name: Run Ruff
+        run: ruff check keon_sdk/ tests/
+
+      - name: Run MyPy
+        run: mypy keon_sdk/
+

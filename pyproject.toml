@@ -91,6 +91,9 @@ python_classes = "Test*"
 python_functions = "test_*"
 addopts = "-v --cov=keon_sdk --cov-report=term-missing --cov-report=html"
 asyncio_mode = "auto"
+markers = [
+    "sentinel: architecture guard tests — enforce policy authority contract",
+]
 
 [tool.coverage.run]
 source = ["keon_sdk"]
