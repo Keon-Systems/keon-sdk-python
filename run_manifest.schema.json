@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://keon.systems/schemas/run_manifest.schema.json",
+  "title": "RunManifest",
+  "description": "Canonical evidence record emitted per test run. Schema v1.0.0.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "runId",
+    "timestamp",
+    "env",
+    "layer",
+    "suite",
+    "scenarioId",
+    "status",
+    "source",
+    "evidence"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Schema version – always 1.0.0 for this revision."
+    },
+    "runId": {
+      "type": "string",
+      "description": "UUIDv4 uniquely identifying this run attempt.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of run start."
+    },
+    "env": {
+      "type": "string",
+      "enum": ["local", "ci", "staging", "production"],
+      "description": "Target environment under test."
+    },
+    "layer": {
+      "type": "string",
+      "description": "Architectural layer under test (e.g. forgepilot.ai, keon.systems)."
+    },
+    "suite": {
+      "type": "string",
+      "enum": ["smoke", "unit", "contract", "integration", "e2e", "chaos", "perf", "obs"],
+      "description": "Test suite tier."
+    },
+    "scenarioId": {
+      "type": "string",
+      "description": "Stable identifier for this test scenario (slug format).",
+      "pattern": "^[a-z0-9][a-z0-9-]*[a-z0-9]$"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pass", "fail", "skip", "abort"],
+      "description": "Terminal status of this run."
+    },
+    "durationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Wall-clock duration of the run in milliseconds."
+    },
+    "source": {
+      "type": "object",
+      "required": ["file"],
+      "description": "Origin of the test.",
+      "properties": {
+        "file": { "type": "string", "description": "Source file path relative to repo root." },
+        "line": { "type": "integer", "minimum": 1 },
+        "commit": { "type": "string", "description": "Git commit SHA (short or full)." },
+        "branch": { "type": "string" },
+        "ci": { "type": "string", "description": "CI run URL or job ID if available." }
+      },
+      "additionalProperties": false
+    },
+    "assertions": {
+      "type": "array",
+      "description": "Canonical assertion IDs evaluated during this run.",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Canonical assertion ID e.g. INV-IDEMPOTENCY.",
+            "enum": [
+              "INV-IDEMPOTENCY",
+              "INV-DETERMINISM",
+              "INV-ISOLATION",
+              "INV-TRUTHFULNESS",
+              "INV-OBSERVABILITY",
+              "INV-RESILIENCE",
+              "INV-CONTRACT",
+              "INV-CORRELATION"
+            ]
+          },
+          "status": { "type": "string", "enum": ["pass", "fail", "skip"] },
+          "message": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["spoolDir"],
+      "description": "Evidence artifact locations.",
+      "properties": {
+        "spoolDir": {
+          "type": "string",
+          "description": "Local path to the spool directory containing artifacts."
+        },
+        "blobPrefix": {
+          "type": "string",
+          "description": "Azure Blob Storage path prefix for this run."
+        },
+        "traceUrl": { "type": "string", "format": "uri" },
+        "screenshotUrls": {
+          "type": "array",
+          "items": { "type": "string", "format": "uri" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Free-form tags for filtering."
+    },
+    "meta": {
+      "type": "object",
+      "description": "Arbitrary key-value metadata.",
+      "additionalProperties": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
+
