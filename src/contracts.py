@@ -53,6 +53,12 @@ class DecideRequest(BaseModel):
     action: str = Field(..., min_length=1)
     resource_type: str = Field(..., alias="resourceType", min_length=1)
     resource_id: str = Field(..., alias="resourceId", min_length=1)
+    subject_hash: str = Field(
+        ...,
+        alias="subjectHash",
+        min_length=1,
+        description="SHA-256 hex digest of the canonical subject payload (content being governed)",
+    )
     context: Optional[Dict[str, Any]] = None
 
     @field_validator("correlation_id")

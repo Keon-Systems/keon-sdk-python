@@ -71,6 +71,32 @@ class TestKeonSdkSentinels:
                 tenantId="t", action="x", resourceType="r", resourceId="id",
             )
 
+    def test_keon_sdk_sentinel_1a_decide_request_requires_subject_hash(self) -> None:
+        """KEON-SDK-SENTINEL-1a: subjectHash is mandatory — absent case fails."""
+        from pydantic import ValidationError
+        from keon_sdk.contracts import DecideRequest
+
+        with pytest.raises(ValidationError):  # missing subjectHash
+            DecideRequest(
+                correlationId=_VALID_CORRELATION_ID,
+                tenantId="t", actorId="a", action="x",
+                resourceType="r", resourceId="id",
+                # subjectHash intentionally omitted
+            )
+
+    def test_keon_sdk_sentinel_1a_empty_subject_hash_rejected(self) -> None:
+        """KEON-SDK-SENTINEL-1a: subjectHash="" (empty string) must be rejected."""
+        from pydantic import ValidationError
+        from keon_sdk.contracts import DecideRequest
+
+        with pytest.raises(ValidationError):
+            DecideRequest(
+                correlationId=_VALID_CORRELATION_ID,
+                tenantId="t", actorId="a", action="x",
+                resourceType="r", resourceId="id",
+                subjectHash="",
+            )
+
     # ───────────────────────────────────────────────────────────────────────────
     # KEON-SDK-SENTINEL-1b: DecisionReceipt schema is strict
     # ───────────────────────────────────────────────────────────────────────────
@@ -162,7 +188,7 @@ class TestKeonSdkSentinels:
 # ─────────────────────────────────────────────────────────────────────────────
 # Drift tripwire hashes — update only after doctrine review
 # ─────────────────────────────────────────────────────────────────────────────
-_DECIDE_FIELDS_HASH = "6a8c75b57593cd19"
+_DECIDE_FIELDS_HASH = "5c7ae3e6d532d49a"
 _RECEIPT_FIELDS_HASH = "d5f0c62ffa683fde"
 
 
